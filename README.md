@@ -15,6 +15,7 @@ Server Device:
  - accepts data transmitted at set interval, records/sanity check for data, adds time stamp?
  - pyserial package to get data from Heltec
  - Measuremnt storage? (two files alternating when full so not "memory leak" by logging?)
+ - MQTT protocol? 
 
 Webpage:
    - Python graph? (Historical min/max to determine fullness of tank?)
