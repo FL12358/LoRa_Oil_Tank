@@ -1,11 +1,10 @@
-#include <LoRa.h>
-
-//Libraries for OLED Display
+#include <SPI.h>
+#include <heltec.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-//define the pins used by the LoRa transceiver module
+//LoRa Pins
 #define SCK 5
 #define MISO 19
 #define MOSI 27
@@ -13,14 +12,14 @@
 #define RST 14
 #define DIO0 26
 
-#define BAND 866E6
+#define BAND 868E6
 
 //OLED pins
 #define OLED_SDA 4
 #define OLED_SCL 15 
 #define OLED_RST 16
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define SCREEN_WIDTH 128 
+#define SCREEN_HEIGHT 64 
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
@@ -54,12 +53,16 @@ void setup(){
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
   //setup LoRa transceiver module
-  LoRa.setPins(SS, RST, DIO0);
+  //LoRa.setPins(SS, RST, DIO0);
 
-  if (!LoRa.begin(BAND)) {
+  Heltec.begin(true , true , true , true , BAND);
+  //int LoRaValid = LoRa.begin(BAND);
+  int LoRaValid = 1;
+  if (!LoRaValid) {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  
   Serial.println("LoRa Initialising OK!");
   display.setCursor(0,10);
   display.println("LoRa Initialising OK!");
@@ -67,20 +70,15 @@ void setup(){
 }
 
 void loop() {
-  //try to parse packet
-  LoRa.idle();
   int packetSize = LoRa.parsePacket();
   if(packetSize){
-    //received a packet
     Serial.print("Distance: ");
 
-    //read packet
     while (LoRa.available()) {
       LoRaData = LoRa.readString();
-      Serial.print(LoRaData);
+      Serial.println(LoRaData);
     }
 
-     // Dsiplay information
      display.clearDisplay();
      display.setCursor(0,0);
      display.print("LORA RECEIVER");
@@ -89,8 +87,5 @@ void loop() {
      display.setCursor(0,30);
      display.print(LoRaData);
      display.display();
-
-     //delay(100);
   }
-
 }
