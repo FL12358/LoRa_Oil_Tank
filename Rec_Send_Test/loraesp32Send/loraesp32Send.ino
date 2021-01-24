@@ -4,6 +4,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#include "WiFi.h" 
+#include "driver/adc.h"
+#include <esp_wifi.h>
+#include <esp_bt.h>
+
+
 //LoRa pins
 #define SCK 5
 #define MISO 19
@@ -25,49 +31,29 @@
 #define trigPin 13
 #define echoPin 12
 
-#define uS_TO_S_FACTOR 10E6
-#define SLEEP_TIME 5
+#define uS_TO_S_FACTOR 1000000
 
 
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
 void setup(){
+    setCpuFrequencyMhz(80);
+
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
 
-    pinMode(OLED_RST, OUTPUT);
-    digitalWrite(OLED_RST, LOW);
-    delay(20);
-    digitalWrite(OLED_RST, HIGH);
-
-    //initialize OLED
-    Wire.begin(OLED_SDA, OLED_SCL);
-    if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) { // Address 0x3C for 128x32
-        Serial.println(F("SSD1306 allocation failed"));
-        for(;;);
-    }
-    
-    display.clearDisplay();
-    display.setTextColor(WHITE);
-    display.setTextSize(1);
-    display.setCursor(0,0);
-    display.print("LORA SENDER ");
-    display.display();
-    
-    //initialize Serial Monitor
-    Serial.begin(115200);
-
-    //SPI.begin(SCK, MISO, MOSI, SS);
-    Heltec.begin(true , true , true , true , BAND);
+    Heltec.begin(false , true , true , true , BAND);
+    delay(500);
 
 
-    
-    Serial.println("LoRa Initialising OK!");
-    display.setCursor(0,10);
-    display.print("LoRa Initialising OK!");
-    display.display();
-    delay(2000);
+    float distance_cm = takeMeasurement(10);
+    LoRaSendPacket(distance_cm);
+
+    setupDeepSleep(100);
+    delay(100);
+    esp_sleep_enable_timer_wakeup(10 * uS_TO_S_FACTOR);
+    esp_deep_sleep_start();
 }
 
 float takeMeasurement(int samples){
@@ -92,34 +78,21 @@ void LoRaSendPacket(TYPE data){
     LoRa.endPacket();
 }
 
-template<typename TYPE>
-void OledWritePacket(TYPE data){
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.print("Ultrasonic Sensor ");
-    display.setCursor(0,20);
-    display.setTextSize(1);
-    display.print("Distance: ");
-    display.setCursor(0,30);
-    display.print(data);
-    display.setCursor(50,30);
-    display.print(" cm");      
-    display.display();
-}
+void setupDeepSleep(double time){
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    btStop();
+    //esp_wifi_stop(); // Causes issues entering deep sleep
+    esp_bt_controller_disable();
+    LoRa.sleep();
 
-void engageDeepSleep(){
-    esp_sleep_enable_timer_wakeup(SLEEP_TIME * uS_TO_S_FACTOR);
-    esp_deep_sleep_start();
+    adc_power_off();
+    
+    display.ssd1306_command(0x8D); //into charger pump set mode
+    display.ssd1306_command(0x10); //turn off charger pump
+    display.ssd1306_command(0xAE); //set OLED sleep
 }
 
 void loop() {
 
-
-    float distance_cm = takeMeasurement(10);
-    LoRaSendPacket(distance_cm);
-    OledWritePacket(distance_cm);
-    engageDeepSleep();
-
-    //Wait until confirm signal, then sleep (or try again)
-    //delay(1000);
 }
