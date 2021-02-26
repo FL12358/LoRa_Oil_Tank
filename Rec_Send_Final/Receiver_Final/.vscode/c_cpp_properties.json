@@ -3,9 +3,6 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:\\Users\\Freddie\\AppData\\Local\\Arduino15\\packages\\CubeCell\\tools\\**",
-                "C:\\Users\\Freddie\\AppData\\Local\\Arduino15\\packages\\CubeCell\\hardware\\CubeCell\\1.2.0\\**",
-                "C:\\My Documents\\Arduino\\libraries\\EByte_LoRa_E32_library",
                 "C:\\Users\\Freddie\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\**",
                 "C:\\My Documents\\Arduino\\libraries\\**",
                 "C:\\Program Files (x86)\\Arduino\\libraries\\**",
@@ -16,7 +13,7 @@
                 "USBCON"
             ],
             "intelliSenseMode": "msvc-x64",
-            "compilerPath": "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr\\bin\\avr-gcc.exe",
+            "compilerPath": "D:\\Program Files\\GCC\\bin\\gcc.exe",
             "cStandard": "gnu11",
             "cppStandard": "gnu++98"
         }
